@@ -7,4 +7,6 @@ SeederKit::Engine.routes.draw do
       get :export # /scenarious/:id/export -to preview/export seed script
     end
   end
+
+  get "/models", to: "models#index"
 end

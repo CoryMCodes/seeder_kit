@@ -1,0 +1,38 @@
+<h1><%= @scenario.name %></h1>
+<p><%= @scenario.description %></p>
+
+<hr>
+
+<h2>Select Models for This Scenario</h2>
+
+<div id="model-selector">Loading model list...</div>
+
+<script type="text/javascript">
+  fetch("/seeder_kit/models")
+    .then(res => res.json())
+    .then(models => {
+      const container = document.getElementById("model-selector");
+      container.innerHTML = "";
+
+      models.forEach(model => {
+        const label = document.createElement("label");
+        const checkbox = document.createElement("input");
+
+        checkbox.type = "checkbox";
+        checkbox.name = "models[]";
+        checkbox.value = model.name;
+
+        label.appendChild(checkbox);
+        label.append(` ${model.name} — [${model.columns.map(col => col.name).join(", ")}]`);
+        container.appendChild(label);
+        container.appendChild(document.createElement("br"));
+      });
+    });
+</script>
+
+<hr>
+
+<%= button_to "Run Scenario", run_scenario_path(@scenario), method: :post %>
+<%= link_to "Export Seed", export_scenario_path(@scenario) %>
+|
+<%= link_to "Back to List", scenarios_path %>

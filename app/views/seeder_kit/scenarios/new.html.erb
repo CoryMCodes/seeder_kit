@@ -1,0 +1,19 @@
+<h1>New Scenario</h1>
+
+<%= form_with model: @scenario, url: scenarios_path, local: true do |form| %>
+  <div>
+    <%= form.label :name %><br>
+    <%= form.text_field :name %>
+  </div>
+
+  <div>
+    <%= form.label :description %><br>
+    <%= form.text_area :description %>
+  </div>
+
+  <div>
+    <%= form.submit "Create Scenario" %>
+  </div>
+<% end %>
+
+<%= link_to "Back", scenarios_path %>
