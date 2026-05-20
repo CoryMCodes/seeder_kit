@@ -10,11 +10,11 @@
 <script type="text/javascript">
   fetch("/seeder_kit/models")
     .then(res => res.json())
-    .then(models => {
+    .then(schema => {
       const container = document.getElementById("model-selector");
       container.innerHTML = "";
 
-      models.forEach(model => {
+      schema.models.forEach(model => {
         const label = document.createElement("label");
         const checkbox = document.createElement("input");
 
@@ -23,7 +23,7 @@
         checkbox.value = model.name;
 
         label.appendChild(checkbox);
-        label.append(` ${model.name} — [${model.columns.map(col => col.name).join(", ")}]`);
+        label.append(` ${model.name} — [${model.attributes.map(attribute => attribute.name).join(", ")}]`);
         container.appendChild(label);
         container.appendChild(document.createElement("br"));
       });
