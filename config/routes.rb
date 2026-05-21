@@ -11,4 +11,5 @@ SeederKit::Engine.routes.draw do
   end
 
   get "/models", to: "models#index"
+  get "/domain_graph", to: "domain_graphs#show"
 end
