@@ -1,5 +1,7 @@
 SeederKit::Engine.routes.draw do
-  root to: "scenarios#index"
+  root to: "seed_generators#new"
+
+  post "/generate", to: "seed_generators#create", as: :generate
 
   resources :scenarios, only: [ :index, :new, :create, :show ] do
     member do

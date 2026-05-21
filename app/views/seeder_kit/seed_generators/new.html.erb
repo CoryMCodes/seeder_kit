@@ -1,0 +1,42 @@
+<main class="seed-generator">
+  <header class="seed-generator__header">
+    <div>
+      <p class="seed-generator__eyebrow">SeederKit</p>
+      <h1>Seed Generator</h1>
+    </div>
+
+    <nav class="seed-generator__nav" aria-label="SeederKit">
+      <%= link_to "Scenarios", scenarios_path %>
+      <%= link_to "Models JSON", models_path %>
+    </nav>
+  </header>
+
+  <% if @error_message.present? %>
+    <div class="seed-generator__error" role="alert">
+      <%= @error_message %>
+    </div>
+  <% end %>
+
+  <%= form_with url: generate_path, method: :post, local: true, class: "seed-generator__form" do |form| %>
+    <section class="seed-generator__panel" aria-labelledby="schema-label">
+      <div class="seed-generator__panel-header">
+        <%= form.label :schema, "schema.rb", id: "schema-label" %>
+        <%= form.submit "Generate seeds.rb", class: "seed-generator__button" %>
+      </div>
+
+      <%= form.text_area :schema,
+        value: @schema_text,
+        class: "seed-generator__textarea",
+        spellcheck: false,
+        placeholder: "ActiveRecord::Schema[8.0].define do\n  create_table \"users\" do |t|\n    t.string \"email\"\n  end\nend" %>
+    </section>
+
+    <section class="seed-generator__panel" aria-labelledby="output-label">
+      <div class="seed-generator__panel-header">
+        <label id="output-label" for="seed-output">seeds.rb</label>
+      </div>
+
+      <textarea id="seed-output" class="seed-generator__textarea seed-generator__textarea--output" readonly spellcheck="false"><%= @seed_output %></textarea>
+    </section>
+  <% end %>
+</main>

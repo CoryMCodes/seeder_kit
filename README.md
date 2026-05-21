@@ -3,6 +3,17 @@ SeederKit is a Rails engine designed to make generating realistic seed data fast
 
 Instead of writing brittle seed scripts or hardcoding data, SeederKit provides a structured way to define and generate seed scenarios based on your application’s schema and relationships.
 
+## Current Prototype
+The current prototype includes a small non-AI generator:
+
+```txt
+paste Rails schema.rb -> generate a starter db/seeds.rb file
+```
+
+It lives at the mounted engine root and is intentionally simple: paste a Rails schema, generate one valid-ish record per application table, and copy the resulting Ruby seed file.
+
+This is a first wedge toward the larger SeederKit idea. The long-term direction is deterministic development-state orchestration for Rails apps, with AI eventually helping plan scenarios rather than writing arbitrary Ruby.
+
 ## Why SeederKit Exists
 In most Rails apps, seed data quickly becomes:
 

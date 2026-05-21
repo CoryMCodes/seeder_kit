@@ -13,3 +13,163 @@
  *= require_tree .
  *= require_self
  */
+
+:root {
+  color-scheme: light;
+  --seedkit-bg: #f7f8fa;
+  --seedkit-panel: #ffffff;
+  --seedkit-border: #d8dee7;
+  --seedkit-text: #18202f;
+  --seedkit-muted: #596579;
+  --seedkit-accent: #0f766e;
+  --seedkit-accent-dark: #115e59;
+  --seedkit-error-bg: #fff1f2;
+  --seedkit-error-border: #fecdd3;
+  --seedkit-error-text: #9f1239;
+}
+
+body {
+  margin: 0;
+  background: var(--seedkit-bg);
+  color: var(--seedkit-text);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.seed-generator {
+  width: min(1180px, calc(100vw - 32px));
+  margin: 0 auto;
+  padding: 32px 0;
+}
+
+.seed-generator__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.seed-generator__eyebrow {
+  margin: 0 0 4px;
+  color: var(--seedkit-muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.seed-generator h1 {
+  margin: 0;
+  font-size: 2rem;
+  line-height: 1.1;
+}
+
+.seed-generator__nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.seed-generator__nav a {
+  color: var(--seedkit-accent-dark);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.seed-generator__nav a:hover {
+  text-decoration: underline;
+}
+
+.seed-generator__form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 20px;
+}
+
+.seed-generator__panel {
+  display: flex;
+  min-height: 640px;
+  overflow: hidden;
+  flex-direction: column;
+  border: 1px solid var(--seedkit-border);
+  border-radius: 8px;
+  background: var(--seedkit-panel);
+}
+
+.seed-generator__panel-header {
+  display: flex;
+  min-height: 56px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--seedkit-border);
+}
+
+.seed-generator__panel-header label {
+  font-weight: 800;
+}
+
+.seed-generator__button {
+  border: 0;
+  border-radius: 6px;
+  background: var(--seedkit-accent);
+  color: #ffffff;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+  padding: 10px 14px;
+}
+
+.seed-generator__button:hover {
+  background: var(--seedkit-accent-dark);
+}
+
+.seed-generator__textarea {
+  width: 100%;
+  min-height: 0;
+  flex: 1;
+  box-sizing: border-box;
+  border: 0;
+  outline: 0;
+  resize: vertical;
+  color: var(--seedkit-text);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 0.86rem;
+  line-height: 1.55;
+  padding: 16px;
+}
+
+.seed-generator__textarea--output {
+  background: #fbfcfe;
+}
+
+.seed-generator__error {
+  margin-bottom: 16px;
+  border: 1px solid var(--seedkit-error-border);
+  border-radius: 8px;
+  background: var(--seedkit-error-bg);
+  color: var(--seedkit-error-text);
+  font-weight: 700;
+  padding: 12px 14px;
+}
+
+@media (max-width: 820px) {
+  .seed-generator {
+    width: min(100vw - 24px, 720px);
+    padding: 20px 0;
+  }
+
+  .seed-generator__header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .seed-generator__form {
+    grid-template-columns: 1fr;
+  }
+
+  .seed-generator__panel {
+    min-height: 460px;
+  }
+}
