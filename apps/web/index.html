@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Paste your Rails schema.rb and generate a starter db/seeds.rb file instantly."
+    />
+    <title>SeederKit - Rails Seed Generator</title>
+  </head>
+  <body>
+    <main class="page-shell">
+      <section class="intro">
+        <p class="eyebrow">SeederKit</p>
+        <h1>Generate a Rails seed file from schema.rb</h1>
+        <p class="lede">
+          Paste a Rails schema, get a starter <code>db/seeds.rb</code> file.
+          No app access, no setup, no AI.
+        </p>
+      </section>
+
+      <section class="generator" aria-label="Rails seed generator">
+        <div class="panel">
+          <div class="panel-header">
+            <label for="schema-input">schema.rb</label>
+            <div class="actions">
+              <button id="sample-button" class="button button-secondary" type="button">Sample</button>
+              <button id="generate-button" class="button" type="button">Generate</button>
+            </div>
+          </div>
+          <textarea id="schema-input" class="code-box" spellcheck="false"></textarea>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <label for="seed-output">seeds.rb</label>
+            <button id="copy-button" class="button button-secondary" type="button">Copy</button>
+          </div>
+          <textarea id="seed-output" class="code-box code-box-output" readonly spellcheck="false"></textarea>
+        </div>
+      </section>
+
+      <p id="message" class="message" role="status" aria-live="polite"></p>
+    </main>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

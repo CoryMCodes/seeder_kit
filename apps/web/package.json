@@ -1,0 +1,21 @@
+{
+  "name": "seeder-kit-web",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "deploy": "npm run build && gh-pages -d dist",
+    "preview": "vite preview",
+    "test": "tsc -p tsconfig.test.json && node --test dist-tests/*.test.js"
+  },
+  "dependencies": {
+    "vite": "^7.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.0",
+    "gh-pages": "^6.3.0",
+    "typescript": "^5.9.0"
+  }
+}

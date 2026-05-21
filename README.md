@@ -14,6 +14,8 @@ It lives at the mounted engine root and is intentionally simple: paste a Rails s
 
 This is a first wedge toward the larger SeederKit idea. The long-term direction is deterministic development-state orchestration for Rails apps, with AI eventually helping plan scenarios rather than writing arbitrary Ruby.
 
+There is also a standalone Vite + TypeScript webpage in `apps/web`. It keeps the public paste-and-generate tool separate from the Rails engine and runs the MVP as a client-side text transformation.
+
 ## Why SeederKit Exists
 In most Rails apps, seed data quickly becomes:
 
