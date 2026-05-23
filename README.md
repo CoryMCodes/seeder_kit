@@ -16,6 +16,8 @@ This is a first wedge toward the larger SeederKit idea. The long-term direction 
 
 There is also a standalone Vite + TypeScript webpage in `apps/web`. It keeps the public paste-and-generate tool separate from the Rails engine and runs the MVP as a client-side text transformation.
 
+The current architecture plan and checkpoint tracker live in [docs/architecture-plan.md](docs/architecture-plan.md).
+
 ## Why SeederKit Exists
 In most Rails apps, seed data quickly becomes:
 
