@@ -16,7 +16,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_20_120000) do
     t.integer "post_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["post_id"], name: "index_comments_on_post_id"
+    t.index [ "post_id" ], name: "index_comments_on_post_id"
   end
 
   create_table "posts", force: :cascade do |t|
@@ -26,7 +26,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_20_120000) do
     t.integer "status", default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["user_id"], name: "index_posts_on_user_id"
+    t.index [ "user_id" ], name: "index_posts_on_user_id"
   end
 
   create_table "seeder_kit_scenarios", force: :cascade do |t|
