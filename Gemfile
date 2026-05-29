@@ -9,6 +9,11 @@ gem "sqlite3"
 
 gem "propshaft"
 
+# Keep the Rails 8.0 dummy app bootable on newer Ruby versions.
+gem "cgi"
+gem "minitest", "~> 5.25"
+gem "tsort"
+
 # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
 gem "rubocop-rails-omakase", require: false
 
