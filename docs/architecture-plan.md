@@ -37,6 +37,10 @@ Rails engine
 
   SchemaReader -> DomainGraphBuilder
     live Rails app introspection path for the full engine
+
+  ScenarioPlan -> BasicScenarioValidator -> ScenarioExecutor
+    first executable scenario slice
+    Ruby hash plan -> basic validation -> transaction-wrapped create!
 ```
 
 The public webpage and engine do not need to share runtime code right now. They should share product behavior and vocabulary. The webpage can stay simple while the engine grows the deeper Rails-native orchestration system.
@@ -111,7 +115,7 @@ Definition of done:
 
 Goal: Define the internal scenario representation before adding AI.
 
-This is the next likely engine step.
+This is the first executable engine contract.
 
 The format should describe requested records and relationships, not executable Ruby. Start with Ruby hash / JSON input rather than a Ruby DSL. Future AI planners can target the same structure directly.
 
@@ -145,24 +149,19 @@ Example direction:
 
 Checkpoints:
 
-- [ ] Add `SeederKit::ScenarioPlan`.
-- [ ] Add `SeederKit::ScenarioEntity`.
-- [ ] Accept input as a Ruby hash.
-- [ ] Normalize string and symbol keys.
-- [ ] Require stable `ref` values for entity references.
-- [ ] Support `model`, `count`, `attributes`, and `belongs_to` relationship wiring.
-- [ ] Support basic attribute overrides.
-- [ ] Do not touch the database.
-- [ ] Do not validate against Active Record yet.
+- [x] Add `SeederKit::ScenarioPlan`.
+- [x] Add `SeederKit::ScenarioEntity`.
+- [x] Accept input as a Ruby hash.
+- [x] Normalize string and symbol keys.
+- [x] Require stable `ref` values for entity references.
+- [x] Support `model`, `count`, `attributes`, and `belongs_to` relationship wiring.
+- [x] Support basic attribute overrides.
+- [x] Keep normalization side-effect free.
+- [x] Keep Active Record validation outside the plan object.
 - [ ] Defer `SeederKit::ScenarioRelationship` unless `belongs_to` on entities becomes insufficient.
-- [ ] Add tests proving the format can describe the dummy app scenarios:
-  - simple users
-  - users with posts
-  - users -> posts -> comments
-  - invalid model as data, not validation failure yet
-  - invalid attribute as data, not validation failure yet
-  - missing parent dependency as data, not validation failure yet
-  - enum-looking value as data, not validation failure yet
+- [x] Add tests proving the format can describe simple users and users with posts.
+- [x] Add executable test proving users -> posts -> comments can be created.
+- [ ] Add explicit plan-format tests for enum-looking values as data.
 
 Definition of done:
 
@@ -202,11 +201,14 @@ Inputs:
 
 Checkpoints:
 
-- [ ] Add `SeederKit::ScenarioValidator`.
-- [ ] Validate referenced models exist.
-- [ ] Validate referenced attributes exist.
-- [ ] Validate counts are positive and reasonable.
-- [ ] Validate required parent dependencies can be satisfied.
+- [x] Add `SeederKit::BasicScenarioValidator` for the first vertical slice.
+- [x] Validate referenced models exist.
+- [x] Validate referenced attributes exist.
+- [x] Validate counts are positive and reasonable.
+- [x] Validate `belongs_to` refs exist.
+- [x] Validate `belongs_to` refs point to earlier entities because v1 uses explicit scenario order.
+- [ ] Add full `SeederKit::ScenarioValidator` when validation needs exceed the basic slice.
+- [ ] Validate required parent dependencies can be satisfied from schema/graph context.
 - [ ] Validate enum values when state/attribute support is added.
 - [ ] Account for required DB columns, nullable columns, defaults, generated timestamps, Rails-managed fields, foreign keys, and model validations.
 - [ ] Add or define `SeederKit::AttributeResolver` to fill missing safe values before execution.
@@ -232,6 +234,8 @@ Definition of done:
 ## Phase 4 - Execution Planning
 
 Goal: Convert a valid scenario plan into deterministic ordered operations.
+
+Status: deferred. The first executable slice does not have a separate execution planner. It creates records in the explicit order listed in the scenario plan after validating that `belongs_to` refs point backward to already-created entities.
 
 Checkpoints:
 
@@ -261,11 +265,11 @@ Goal: Execute planned operations safely.
 
 Checkpoints:
 
-- [ ] Add `SeederKit::ScenarioExecutor`.
-- [ ] Support transaction-wrapped execution.
-- [ ] Support direct `create!` mode first.
-- [ ] Return created record references/results in memory.
-- [ ] Add rollback behavior tests.
+- [x] Add `SeederKit::ScenarioExecutor`.
+- [x] Support transaction-wrapped execution.
+- [x] Support direct `create!` mode first.
+- [x] Return created record references/results in memory.
+- [x] Add rollback behavior tests.
 - [ ] Defer workflow/service-object mode until direct execution is proven.
 - [ ] Defer persistent run metadata until direct execution is useful.
 
@@ -347,24 +351,23 @@ Artifact boundary:
 Recommended next implementation:
 
 ```txt
-Phase 2 - Structured Scenario Format
+Vertical Slice 2 - Basic Attribute Resolution
 ```
 
 Reason:
 
-- `SchemaReader` and `DomainGraphBuilder` now provide the app context.
-- The engine needs stable refs, attributes, and relationship wiring before validation, execution, CLI, or AI work can be coherent.
-- This keeps AI small and deterministic orchestration large.
+- The first executable slice can create related records from a structured plan.
+- The next practical gap is avoiding brittle plans that must manually specify every model-required value.
+- Attribute resolution should stay deterministic and should run before execution.
 
 Recommended next implementation scope:
 
-- `SeederKit::ScenarioPlan`
-- `SeederKit::ScenarioEntity`
-- Ruby hash parser/normalizer
-- support for `ref`, `model`, `count`, `attributes`, and `belongs_to`
-- contract tests using dummy app concepts only
-- no database access
-- no Active Record validation yet
+- define `SeederKit::AttributeResolver`
+- fill safe missing values for simple required attributes
+- respect explicit attributes first
+- skip Rails-managed timestamps
+- avoid complex model validations/callbacks for now
+- keep execution direct and transaction-wrapped
 
 ## Non-Goals For Now
 
