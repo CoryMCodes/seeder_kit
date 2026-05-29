@@ -28,6 +28,10 @@ module SeederKit
       SeederKit.run(fetch(name).build_plan(inputs))
     end
 
+    def preview(name, **inputs)
+      SeederKit.preview(fetch(name).build_plan(inputs))
+    end
+
     def clear
       definitions_by_name.clear
     end
