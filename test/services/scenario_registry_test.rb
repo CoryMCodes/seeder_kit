@@ -32,6 +32,43 @@ module SeederKit
       assert_equal [ first, second ], SeederKit.scenarios
     end
 
+    test "stores ordered child scenario includes" do
+      definition = SeederKit.scenario "Demo content" do
+        include_scenario "Users with posts", user_count: :user_count
+        include_scenario "Archived article", title: "Old news"
+      end
+
+      first_include, second_include = definition.scenario_includes
+
+      assert definition.composed?
+      assert_equal "Users with posts", first_include.name
+      assert_equal({ user_count: :user_count }, first_include.input_bindings)
+      assert_equal "Archived article", second_include.name
+      assert_equal({ title: "Old news" }, second_include.input_bindings)
+    end
+
+    test "rejects adding includes after a plan" do
+      error = assert_raises(ScenarioDefinition::MixedDefinitionError) do
+        SeederKit.scenario "Mixed leaf first" do
+          plan(entities: [])
+          include_scenario "Users"
+        end
+      end
+
+      assert_equal "Scenario Mixed leaf first cannot define both plan and include_scenario", error.message
+    end
+
+    test "rejects adding a plan after includes" do
+      error = assert_raises(ScenarioDefinition::MixedDefinitionError) do
+        SeederKit.scenario "Mixed composition first" do
+          include_scenario "Users"
+          plan(entities: [])
+        end
+      end
+
+      assert_equal "Scenario Mixed composition first cannot define both plan and include_scenario", error.message
+    end
+
     test "scenarios can define inputs" do
       definition = SeederKit.scenario "Parameterized users" do
         input :user_count, type: :integer, default: 5, description: "Number of users to create"

@@ -8,16 +8,20 @@ module SeederKit
         default.equal?(ScenarioDefinition::UNSET)
       end
     end
+    IncludeDefinition = Data.define(:name, :input_bindings)
 
     class InputError < ArgumentError; end
+    class MixedDefinitionError < ArgumentError; end
 
-    attr_reader :name, :input_definitions
+    attr_reader :name, :input_definitions, :scenario_includes
 
     def initialize(name)
       @name = name.to_s
       @description = nil
       @plan = nil
+      @plan_defined = false
       @input_definitions = {}
+      @scenario_includes = []
     end
 
     def evaluate(&block)
@@ -57,9 +61,24 @@ module SeederKit
         raise ArgumentError, "Provide a static plan or a plan block, not both"
       end
 
-      @plan = block || value unless value.equal?(UNSET) && !block
+      unless value.equal?(UNSET) && !block
+        raise MixedDefinitionError, mixed_definition_message if composed?
+
+        @plan = block || value
+        @plan_defined = true
+      end
 
       @plan
+    end
+
+    def include_scenario(name, **input_bindings)
+      raise MixedDefinitionError, mixed_definition_message if @plan_defined
+
+      scenario_includes << IncludeDefinition.new(name: name.to_s, input_bindings: input_bindings.dup)
+    end
+
+    def composed?
+      scenario_includes.any?
     end
 
     def build_plan(overrides = {})
@@ -93,6 +112,10 @@ module SeederKit
     end
 
     private
+
+    def mixed_definition_message
+      "Scenario #{name} cannot define both plan and include_scenario"
+    end
 
     def normalize_overrides(overrides)
       overrides.to_h.transform_keys { |key| normalize_input_name(key) }
