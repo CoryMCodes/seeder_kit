@@ -3,6 +3,7 @@
 /log/*.log
 /pkg/
 /tmp/
+/.worktrees/
 /test/dummy/db/*.sqlite3
 /test/dummy/db/*.sqlite3-*
 /test/dummy/log/*.log
