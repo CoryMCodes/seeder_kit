@@ -1,6 +1,6 @@
 # SeederKit Architecture Plan
 
-Last updated: 2026-05-22
+Last updated: 2026-06-02
 
 ## Purpose
 
@@ -38,9 +38,11 @@ Rails engine
   SchemaReader -> DomainGraphBuilder
     live Rails app introspection path for the full engine
 
-  ScenarioPlan -> BasicScenarioValidator -> ScenarioExecutor
-    first executable scenario slice
-    Ruby hash plan -> basic validation -> transaction-wrapped create!
+  ScenarioDefinition -> ScenarioRegistry -> ScenarioComposer
+    named scenarios -> typed inputs -> shallow independent composition
+
+  ScenarioPlan -> BasicScenarioValidator -> ScenarioPreview / ScenarioExecutor
+    one structured plan -> basic validation -> preview or transaction-wrapped create!
 ```
 
 The public webpage and engine do not need to share runtime code right now. They should share product behavior and vocabulary. The webpage can stay simple while the engine grows the deeper Rails-native orchestration system.
@@ -286,6 +288,34 @@ Deferred persistence concept:
 
 v1 direct execution should return in-memory refs only. Persistent run tracking comes later.
 
+## Implemented Vertical Slice - Registry, Preview, and Shallow Composition
+
+Goal: Build reusable named scenario recipes on top of the structured scenario contract.
+
+Checkpoints:
+
+- [x] Add `SeederKit::ScenarioRegistry`.
+- [x] Add typed parameterized scenario inputs.
+- [x] Add side-effect-free `SeederKit::ScenarioPreview`.
+- [x] Add shallow `SeederKit::ScenarioComposer`.
+- [x] Merge leaf scenario plans deterministically in include order.
+- [x] Support parent-input mappings and literal child input values.
+- [x] Reject duplicate refs through existing plan validation.
+- [x] Reject nested composition and cross-child refs for the first composition slice.
+
+Deferred composition capabilities:
+
+- nested scenario composition
+- cross-child entity references
+- inline parent entities in composed scenarios
+- ref renaming or namespacing
+
+Definition of done:
+
+- Reusable leaf scenarios can be combined into one inspectable structured plan.
+- Preview remains side-effect free.
+- Execution still validates once and runs in one transaction.
+
 ## Phase 6 - CLI Surface
 
 Goal: Add a Rails-native command surface that reuses core services.
@@ -348,26 +378,14 @@ Artifact boundary:
 
 ## Current Next Step
 
-Recommended next implementation:
+Choose the next product slice after shallow scenario composition is merged.
 
-```txt
-Vertical Slice 2 - Basic Attribute Resolution
-```
+Candidate directions:
 
-Reason:
-
-- The first executable slice can create related records from a structured plan.
-- The next practical gap is avoiding brittle plans that must manually specify every model-required value.
-- Attribute resolution should stay deterministic and should run before execution.
-
-Recommended next implementation scope:
-
-- define `SeederKit::AttributeResolver`
-- fill safe missing values for simple required attributes
-- respect explicit attributes first
-- skip Rails-managed timestamps
-- avoid complex model validations/callbacks for now
-- keep execution direct and transaction-wrapped
+- Add a Rails-native CLI for listing, previewing, and running registered scenarios.
+- Connect the Rails UI prototype to registered scenarios, typed inputs, preview, and run.
+- Design recursive composition and explicit cross-child ref contracts if real scenarios require them.
+- Add deterministic attribute resolution when required-value boilerplate becomes the limiting problem.
 
 ## Non-Goals For Now
 
