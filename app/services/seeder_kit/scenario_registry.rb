@@ -25,11 +25,11 @@ module SeederKit
     end
 
     def run(name, **inputs)
-      SeederKit.run(fetch(name).build_plan(inputs))
+      SeederKit.run(build_plan(name, inputs))
     end
 
     def preview(name, **inputs)
-      SeederKit.preview(fetch(name).build_plan(inputs))
+      SeederKit.preview(build_plan(name, inputs))
     end
 
     def clear
@@ -39,5 +39,9 @@ module SeederKit
     private
 
     attr_reader :definitions_by_name
+
+    def build_plan(name, inputs)
+      ScenarioComposer.new(registry: self).call(fetch(name), inputs)
+    end
   end
 end
