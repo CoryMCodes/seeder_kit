@@ -127,13 +127,13 @@ module SeederKit
 
     def validate_input_type(definition, value)
       valid = case definition.type
-              when :integer
-                value.is_a?(Integer)
-              when :string
-                value.is_a?(String)
-              when :boolean
-                value == true || value == false
-              end
+      when :integer
+        value.is_a?(Integer)
+      when :string
+        value.is_a?(String)
+      when :boolean
+        value == true || value == false
+      end
 
       return if valid
 
