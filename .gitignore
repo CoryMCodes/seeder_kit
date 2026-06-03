@@ -4,6 +4,18 @@
 /pkg/
 /tmp/
 /.worktrees/
+
+# BMad local runtime and generated artifacts
+/.agents/skills/
+/_bmad/config.user.toml
+/_bmad/custom/*.user.toml
+/_bmad-output/**
+!/_bmad-output/
+!/_bmad-output/project-context.md
+/sprint-status.yaml
+/PRD.md
+/prd.md
+
 /test/dummy/db/*.sqlite3
 /test/dummy/db/*.sqlite3-*
 /test/dummy/log/*.log
