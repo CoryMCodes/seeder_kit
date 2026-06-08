@@ -1,131 +1,265 @@
 # SeederKit
-SeederKit is a Rails engine designed to make generating realistic seed data fast, flexible, and repeatable.
 
-Instead of writing brittle seed scripts or hardcoding data, SeederKit provides a structured way to define and generate seed scenarios based on your application’s schema and relationships.
+SeederKit is a Rails engine for defining, previewing, validating, composing, and executing named development data states in Rails applications.
 
-## Current Prototype
-The current prototype includes a small non-AI generator:
+The current product center is the Rails-native scenario workflow:
+
+```txt
+define named scenario
+-> list available scenarios in Ruby
+-> preview and validate planned state
+-> run safely in one transaction
+-> share the definition with a teammate
+```
+
+SeederKit also includes a standalone client-side web utility in `apps/web` that turns pasted `schema.rb` text into a starter `db/seeds.rb` file. That utility is intentionally separate from the Rails engine workflow.
+
+## Current Status
+
+SeederKit is early-stage. The shipped Rails engine currently provides service-level Ruby APIs for:
+
+- Structured scenario plans using Ruby hashes.
+- Named scenario registration with typed inputs.
+- Shallow scenario composition.
+- Side-effect-free preview and validation.
+- Transaction-wrapped execution with rollback on failure.
+- Live schema reading and deterministic domain graph services.
+
+The Rails command workflow is roadmap work, not shipped behavior yet. Commands such as `bin/rails seeder_kit:list`, `bin/rails seeder_kit:preview[NAME]`, and `bin/rails seeder_kit:run[NAME]` are planned for the next operator workflow slices.
+
+## Installation
+
+For local development against this repository:
+
+```bash
+bundle install
+```
+
+The gem packaging metadata is not release-ready yet, so external installation instructions will be finalized after the gem build slice is complete.
+
+## Define A Scenario Plan
+
+SeederKit plans are structured hashes. They describe records and relationships; they are not executable Ruby code generated from user input.
+
+```ruby
+plan = {
+  entities: [
+    {
+      ref: "user",
+      model: "User",
+      attributes: {
+        name: "Alice",
+        email: "alice@example.com"
+      }
+    },
+    {
+      ref: "post",
+      model: "Post",
+      count: 2,
+      attributes: {
+        title: "Hello",
+        body: "Test body"
+      },
+      belongs_to: {
+        user: "user"
+      }
+    }
+  ]
+}
+```
+
+Supported entity keys today:
+
+- `ref`: stable reference used by validation, relationships, preview, and execution results.
+- `model`: Active Record model name.
+- `count`: positive record count; defaults to `1`.
+- `attributes`: static attribute values.
+- `belongs_to`: association name to earlier entity `ref`.
+
+## Preview A Plan
+
+Preview validates the plan and returns an inspectable summary without writing records.
+
+```ruby
+preview = SeederKit.preview(plan)
+
+preview.valid?
+preview.total_records
+preview.entities.map(&:ref)
+```
+
+Preview currently validates model names, attribute names, counts, referenced entity refs, and first-slice `belongs_to` ordering rules.
+
+## Run A Plan
+
+Execution uses the same validation path and creates records inside one transaction.
+
+```ruby
+result = SeederKit.run(plan)
+
+result.records_by_ref.fetch("user")
+result.records_by_ref.fetch("post")
+```
+
+If validation or Active Record creation fails, execution raises and the transaction rolls back.
+
+## Register Named Scenarios
+
+Named scenarios are registered with `SeederKit.scenario`. A scenario may define a static plan or a dynamic plan block that receives resolved typed inputs.
+
+```ruby
+SeederKit.scenario "Parameterized user with posts" do
+  description "Creates users and related posts for local development."
+
+  input :user_count, type: :integer, default: 1
+  input :posts_per_user, type: :integer, default: 2
+
+  plan do |inputs|
+    {
+      entities: [
+        {
+          ref: "user",
+          model: "User",
+          count: inputs.fetch(:user_count),
+          attributes: {
+            name: "Parameterized",
+            email: "parameterized@example.com"
+          }
+        },
+        {
+          ref: "post",
+          model: "Post",
+          count: inputs.fetch(:user_count) * inputs.fetch(:posts_per_user),
+          attributes: {
+            title: "Parameterized post",
+            body: "Test body"
+          },
+          belongs_to: {
+            user: "user"
+          }
+        }
+      ]
+    }
+  end
+end
+```
+
+Use the registry API directly:
+
+```ruby
+SeederKit.scenarios
+SeederKit.preview_scenario("Parameterized user with posts", user_count: 2)
+SeederKit.run_scenario("Parameterized user with posts", user_count: 2, posts_per_user: 4)
+```
+
+Supported input types are `:integer`, `:string`, and `:boolean`. Unknown inputs, missing required inputs, and invalid input types fail clearly before execution.
+
+## Compose Scenarios
+
+SeederKit supports shallow composition of leaf scenarios:
+
+```ruby
+SeederKit.scenario "Demo content" do
+  input :demo_user_count, type: :integer, default: 2
+
+  include_scenario "Parameterized user with posts", user_count: :demo_user_count
+end
+```
+
+Composition is deliberately narrow today. It preserves include order, applies parent input mappings and literal child inputs, rejects nested composition, and rejects cross-child references.
+
+## Standalone Web Utility
+
+The `apps/web` app is a zero-setup public utility:
 
 ```txt
 paste Rails schema.rb -> generate a starter db/seeds.rb file
 ```
 
-It lives at the mounted engine root and is intentionally simple: paste a Rails schema, generate one valid-ish record per application table, and copy the resulting Ruby seed file.
+It runs fully in the browser. Pasted schemas should remain local to the browser and should not be treated as the Rails engine scenario workflow.
 
-This is a first wedge toward the larger SeederKit idea. The long-term direction is deterministic development-state orchestration for Rails apps, with AI eventually helping plan scenarios rather than writing arbitrary Ruby.
+Run it locally with:
 
-There is also a standalone Vite + TypeScript webpage in `apps/web`. It keeps the public paste-and-generate tool separate from the Rails engine and runs the MVP as a client-side text transformation.
-
-The current architecture plan and checkpoint tracker live in [docs/architecture-plan.md](docs/architecture-plan.md).
-
-## Why SeederKit Exists
-In most Rails apps, seed data quickly becomes:
-
-- Hard to maintain
-- Tightly coupled to models
-- Difficult to reuse across environments
-- Slow to evolve as the schema changes
-
-SeederKit was built to solve that by:
-
-- Separating seed definitions from application logic
-- Supporting reusable, composable seed scenarios
-- Making it easier to generate consistent, realistic data for development and testing
-
-## Core Concepts
-#Scenario-Based Seeding
-
-Define named scenarios that represent real-world states of your application:
-
-```basic_users```
-```active_subscriptions```
-```enterprise_accounts_with_invoices```
-
-Each scenario encapsulates:
-
-- Models involved
-- Relationships
-- Data shape and constraints
-- Declarative Definitions
-
-Instead of imperative scripts, SeederKit encourages declarative configuration:
-
-- Define what data should look like
-- Let the engine handle creation and ordering
-- Relationship-Aware
-
-SeederKit is designed to respect model relationships:
-
-- Associations are created in the correct order
-- Foreign keys are handled automatically
-- Data integrity is preserved
-
-## Installation
-Add this line to your application's Gemfile:
-
-```ruby
-gem "seeder_kit"
-```
-
-And then execute:
 ```bash
-$ bundle
+cd apps/web
+npm install
+npm test
+npm run build
 ```
 
-Or install it yourself as:
+## Supported Behavior
+
+SeederKit currently supports:
+
+- Ruby hash scenario plans.
+- Static scalar attribute values.
+- Positive record counts.
+- Non-polymorphic `belongs_to` relationships that point to earlier entity refs.
+- Named scenario registration.
+- Typed scenario inputs.
+- Shallow composition of leaf scenarios.
+- Preview without database writes.
+- Transaction-wrapped execution with rollback on failure.
+- Schema reading and dependency graph construction for host Rails apps.
+
+## Unsupported Behavior
+
+SeederKit does not currently support:
+
+- Polymorphic associations.
+- HABTM associations.
+- STI-specific planning.
+- Nested attributes.
+- Nested scenario composition.
+- Cross-child references in composed scenarios.
+- Automatic callback orchestration.
+- External-service side effects.
+- Arbitrary model workflow/service-object execution.
+- AI-generated Ruby.
+- JSON or YAML scenario files.
+- Rails CLI commands for list, preview, or run.
+- Production execution safeguards. This is planned before the CLI run command ships.
+
+Callbacks and external services may still run if your Active Record models invoke them during `create!`. SeederKit does not yet infer or manage those effects.
+
+## Roadmap
+
+Near-term roadmap work is tracked in `_bmad-output/planning-artifacts/seederkit-usable-state-roadmap-2026-06-08.md`.
+
+The next product slices focus on:
+
+- Keeping documentation and product claims truthful.
+- Removing or disabling false-success UI actions.
+- Making the gem buildable and release-ready.
+- Refusing production execution by default.
+- Adding Rails commands for scenario list, preview, and run.
+- Improving preview validation for common required-value and enum failures.
+
+Future ideas, including AI planning, visual scenario editing, persistent run history, JSON/YAML scenario files, and broader association support, are intentionally deferred until the first Rails-native workflow is useful to external design partners.
+
+## Project Docs
+
+- [Docs index](docs/README.md)
+- [Architecture plan](docs/architecture-plan.md)
+- [Product roadmap](./_bmad-output/planning-artifacts/seederkit-usable-state-roadmap-2026-06-08.md)
+
+## Development Checks
+
+Rails engine:
+
 ```bash
-$ gem install seeder_kit
+mise exec -- bin/rails test
+mise exec -- bin/rubocop
 ```
 
-## Usage
-# Define a Scenario
-```ruby
-SeederKit.define(:basic_users) do
-  model :user, count: 10 do
-    attribute :email do |i|
-      "user#{i}@example.com"
-    end
+Standalone web utility:
 
-    attribute :name do
-      Faker::Name.name
-    end
-  end
-end
-```
-
-# Run a Scenario
 ```bash
-rails seeder_kit:run[basic_users]
+cd apps/web
+npm test
+npm run build
 ```
-
-## Example Use Cases
-- Quickly bootstrap realistic development environments
-- Generate consistent datasets for QA or demos
-- Support onboarding by providing ready-to-use data states
-- Replace brittle ```db/seeds.rb``` scripts with structured scenarios
-
-## Current Status
-SeederKit is an early-stage project focused on:
-
-- Core scenario definition
-- Model creation and ordering
-- Basic CLI execution
-
-Planned improvements:
-
-- Schema introspection for dynamic model selection
-- UI for selecting models and attributes
-- More advanced relationship handling
-- Integration with test suites
-
-## Design Goals
-- Simple: Easy to define and run scenarios
-- Composable: Reuse building blocks across scenarios
-- Deterministic: Predictable, repeatable outputs
-- Rails-native: Works naturally within existing Rails apps
-  
-## Contributing
-This project is actively evolving. Feedback, ideas, and contributions are welcome.
 
 ## License
+
 MIT License

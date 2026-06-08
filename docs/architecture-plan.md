@@ -1,6 +1,6 @@
 # SeederKit Architecture Plan
 
-Last updated: 2026-06-02
+Last updated: 2026-06-08
 
 ## Purpose
 
@@ -11,17 +11,20 @@ SeederKit has two related surfaces:
 
 The Rails engine is the primary product direction. The standalone web tool is a lightweight public utility and demo surface. It should not drive engine architecture decisions.
 
-The long-term engine direction is:
+The first usable engine workflow is:
 
 ```txt
-natural language or structured request
--> structured scenario plan
--> deterministic validation
--> deterministic execution
--> repeatable development state
+define named scenario
+-> list available scenarios
+-> preview and validate planned state
+-> run safely
+-> replay across the team
 ```
 
-AI can eventually help translate intent into a structured plan. AI should not write arbitrary Ruby. SeederKit should own schema discovery, graph construction, validation, ordering, execution, and replay.
+AI planning is a deferred future capability, not current product positioning.
+If added later, AI output must remain untrusted structured input. AI should not
+write arbitrary Ruby. SeederKit should own schema discovery, graph construction,
+validation, ordering, execution, and replay.
 
 ## Current System Map
 
@@ -318,20 +321,24 @@ Definition of done:
 
 ## Phase 6 - CLI Surface
 
-Goal: Add a Rails-native command surface that reuses core services.
+Goal: Complete the first operator workflow with a Rails-native command surface
+that reuses the registry, preview, validation, and execution services.
 
 Checkpoints:
 
-- [ ] Decide command entrypoint: Rails generator, rake task, executable, or Thor command.
-- [ ] Add command for schema/graph inspection.
-- [ ] Add command for validating a scenario file.
-- [ ] Add command for planning execution without writing records.
-- [ ] Add command for executing a scenario.
+- [ ] Establish and document the host-app scenario registration and typed input contract.
+- [ ] Add `bin/rails seeder_kit:list` for registered scenario discovery.
+- [ ] Add `bin/rails seeder_kit:preview[NAME]` for side-effect-free validation and inspection.
+- [ ] Catch common missing required value and invalid enum failures during preview.
+- [ ] Add `bin/rails seeder_kit:run[NAME]` using the same plan-building path as preview.
+- [ ] Refuse production execution by default before the run command ships.
 
 Definition of done:
 
-- A developer can inspect, validate, plan, and eventually run scenarios from the terminal.
-- CLI uses the same services as the engine endpoints.
+- A developer can define, list, preview, and run a named scenario from the terminal.
+- Preview and run use the same registered definition and validation path.
+- Preview writes nothing; execution runs in one transaction and refuses production.
+- Terminal errors are actionable without requiring a Ruby backtrace.
 
 ## Phase 7 - AI Planning Layer
 
@@ -378,14 +385,19 @@ Artifact boundary:
 
 ## Current Next Step
 
-Choose the next product slice after shallow scenario composition is merged.
+Follow the usable-state roadmap in
+`_bmad-output/planning-artifacts/seederkit-usable-state-roadmap-2026-06-08.md`.
 
-Candidate directions:
+The current sequence is:
 
-- Add a Rails-native CLI for listing, previewing, and running registered scenarios.
-- Connect the Rails UI prototype to registered scenarios, typed inputs, preview, and run.
-- Design recursive composition and explicit cross-child ref contracts if real scenarios require them.
-- Add deterministic attribute resolution when required-value boilerplate becomes the limiting problem.
+1. Align the product contract and documentation.
+2. Remove or disable false-success scenario UI actions.
+3. Make the gem buildable and release-ready.
+4. Refuse production execution by default.
+5. Complete the registered scenario list, preview, validation, and run workflow.
+
+Do not expand into recursive composition, AI planning, scenario files, or a
+replacement UI until external use shows those are repeated blockers.
 
 ## Non-Goals For Now
 
@@ -400,6 +412,9 @@ Candidate directions:
 - No STI support yet.
 - No complex nested attributes yet.
 - No Ruby DSL until the JSON/hash contract is stable.
+- No automatic callback orchestration.
+- No external-service orchestration.
+- No production execution until an explicit refusal guard ships.
 
 UI boundary:
 
