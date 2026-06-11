@@ -17,7 +17,7 @@ The first usable engine workflow is:
 define named scenario
 -> list available scenarios
 -> preview and validate planned state
--> run safely
+-> execute in one transaction
 -> replay across the team
 ```
 

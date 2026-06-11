@@ -1,6 +1,8 @@
 # SeederKit Web
 
-Standalone Vite + TypeScript webpage for the zero-setup `schema.rb -> seeds.rb` tool.
+Standalone Vite + TypeScript webpage for the zero-setup `schema.rb -> starter seeds.rb` tool.
+
+This browser utility is separate from the SeederKit Rails engine and does not provide the engine's named scenario workflow.
 
 ```bash
 npm install

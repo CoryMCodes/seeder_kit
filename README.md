@@ -8,7 +8,7 @@ The current product center is the Rails-native scenario workflow:
 define named scenario
 -> list available scenarios in Ruby
 -> preview and validate planned state
--> run safely in one transaction
+-> run in one transaction
 -> share the definition with a teammate
 ```
 
@@ -26,6 +26,12 @@ SeederKit is early-stage. The shipped Rails engine currently provides service-le
 - Live schema reading and deterministic domain graph services.
 
 The Rails command workflow is roadmap work, not shipped behavior yet. Commands such as `bin/rails seeder_kit:list`, `bin/rails seeder_kit:preview[NAME]`, and `bin/rails seeder_kit:run[NAME]` are planned for the next operator workflow slices.
+
+## Compatibility
+
+The current repository development baseline is Ruby 3.4.9 and Rails 8.0.2. SeederKit does not yet publish a verified compatibility matrix.
+
+Rails 7 support is a desired post-first-release roadmap item, pending demonstrated demand and CI verification. Rails 8.1 and other unverified versions are not currently claimed as supported.
 
 ## Installation
 
@@ -213,7 +219,7 @@ SeederKit does not currently support:
 - Nested scenario composition.
 - Cross-child references in composed scenarios.
 - Automatic callback orchestration.
-- External-service side effects.
+- Orchestrating or suppressing external-service side effects.
 - Arbitrary model workflow/service-object execution.
 - AI-generated Ruby.
 - JSON or YAML scenario files.
@@ -226,7 +232,7 @@ Callbacks and external services may still run if your Active Record models invok
 
 Near-term roadmap work is tracked in `_bmad-output/planning-artifacts/seederkit-usable-state-roadmap-2026-06-08.md`.
 
-The next product slices focus on:
+### Near-Term
 
 - Keeping documentation and product claims truthful.
 - Removing or disabling false-success UI actions.
@@ -235,7 +241,11 @@ The next product slices focus on:
 - Adding Rails commands for scenario list, preview, and run.
 - Improving preview validation for common required-value and enum failures.
 
-Future ideas, including AI planning, visual scenario editing, persistent run history, JSON/YAML scenario files, and broader association support, are intentionally deferred until the first Rails-native workflow is useful to external design partners.
+### Deferred
+
+Rails 7 support is desired after the first release, pending demonstrated demand and CI verification.
+
+AI planning, visual scenario editing, persistent run history, JSON/YAML scenario files, and broader association support are intentionally deferred until the first Rails-native workflow is useful to external design partners.
 
 ## Project Docs
 
