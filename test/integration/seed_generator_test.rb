@@ -7,6 +7,7 @@ class SeedGeneratorTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "h1", "Seed Generator"
     assert_select "textarea[name=schema]"
+    assert_select "nav[aria-label='SeederKit'] a[href='/seeder_kit/models']", "Models JSON"
   end
 
   test "generates seeds from pasted schema text" do

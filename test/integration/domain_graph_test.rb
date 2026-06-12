@@ -5,6 +5,8 @@ class DomainGraphTest < ActionDispatch::IntegrationTest
     get "/seeder_kit/domain_graph"
 
     assert_response :success
+    assert_equal "application/json", response.media_type
+    refute_match(/preview|run|execution|export|named scenario/i, response.body)
 
     graph = JSON.parse(response.body)
 
