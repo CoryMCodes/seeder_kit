@@ -2,7 +2,7 @@ PATH
   remote: .
   specs:
     seeder_kit (0.1.0)
-      rails (>= 8.0.2)
+      rails (>= 8.0.2, < 8.1)
 
 GEM
   remote: https://rubygems.org/

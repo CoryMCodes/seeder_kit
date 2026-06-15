@@ -8,6 +8,7 @@ Start here:
 
 - [Root README](../README.md) for shipped behavior, examples, and current limitations.
 - [Architecture Plan](architecture-plan.md)
+- [Building And Releasing](releasing.md)
 - [Usable-State Product Roadmap](../_bmad-output/planning-artifacts/seederkit-usable-state-roadmap-2026-06-08.md)
 
 The roadmap sequences the work required for the first externally usable product.

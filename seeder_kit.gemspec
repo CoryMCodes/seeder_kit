@@ -3,24 +3,23 @@ require_relative "lib/seeder_kit/version"
 Gem::Specification.new do |spec|
   spec.name        = "seeder_kit"
   spec.version     = SeederKit::VERSION
-  spec.authors     = [ "" ]
-  spec.email       = [ "" ]
-  spec.homepage    = "https://github.com/yourusername/seeder_kit"
-  spec.summary     = "TODO: Summary of SeederKit."
-  spec.description = "TODO: Description of SeederKit."
+  spec.authors     = [ "Cory Musick" ]
+  spec.homepage    = "https://github.com/CoryMCodes/seeder_kit"
+  spec.summary     = "Define, preview, validate, compose, and execute named development data states in Rails."
+  spec.description = "SeederKit is a Rails Engine for deterministic named development data scenarios with side-effect-free preview, validation, shallow composition, and transaction-wrapped execution."
   spec.license     = "MIT"
-
-  # Prevent pushing this gem to RubyGems.org. To allow pushes either set the "allowed_push_host"
-  # to allow pushing to a single host or delete this section to allow pushing to any host.
-  spec.metadata["allowed_push_host"] = "TODO: Set to 'http://mygemserver.com'"
+  spec.required_ruby_version = ">= 3.4", "< 3.5"
 
   spec.metadata["homepage_uri"] = spec.homepage
-  spec.metadata["source_code_uri"] = spec.homepage
-  spec.metadata["changelog_uri"] = "TODO: Put your gem's CHANGELOG.md URL here."
+  spec.metadata["source_code_uri"] = "#{spec.homepage}/tree/main"
+  spec.metadata["bug_tracker_uri"] = "#{spec.homepage}/issues"
+  spec.metadata["changelog_uri"] = "#{spec.homepage}/blob/main/CHANGELOG.md"
 
   spec.files = Dir.chdir(File.expand_path(__dir__)) do
-    Dir["{app,config,db,lib}/**/*", "MIT-LICENSE", "Rakefile", "README.md"]
+    Dir["{app,config,db,lib}/**/*", "CHANGELOG.md", "MIT-LICENSE", "README.md", "SECURITY.md"]
+      .select { |path| File.file?(path) }
+      .sort
   end
 
-  spec.add_dependency "rails", ">= 8.0.2"
+  spec.add_dependency "rails", ">= 8.0.2", "< 8.1"
 end

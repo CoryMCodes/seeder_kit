@@ -35,13 +35,22 @@ Rails 7 support is a desired post-first-release roadmap item, pending demonstrat
 
 ## Installation
 
-For local development against this repository:
+SeederKit is not published to RubyGems yet. To evaluate the current pre-release
+source in a compatible Rails application, add the public HTTPS Git source:
+
+```ruby
+gem "seeder_kit", git: "https://github.com/CoryMCodes/seeder_kit.git", branch: "main"
+```
+
+Then install and verify the engine boots:
 
 ```bash
 bundle install
+bin/rails runner 'abort unless defined?(SeederKit::Engine)'
 ```
 
-The gem packaging metadata is not release-ready yet, so external installation instructions will be finalized after the gem build slice is complete.
+Pin a commit with `ref:` when a repeatable evaluation baseline is required.
+This source-install path is separate from a future published RubyGems release.
 
 ## Define A Scenario Plan
 
@@ -251,6 +260,7 @@ AI planning, visual scenario editing, persistent run history, JSON/YAML scenario
 
 - [Docs index](docs/README.md)
 - [Architecture plan](docs/architecture-plan.md)
+- [Building and releasing](docs/releasing.md)
 - [Product roadmap](./_bmad-output/planning-artifacts/seederkit-usable-state-roadmap-2026-06-08.md)
 
 ## Development Checks

@@ -6,6 +6,21 @@ on:
     branches: [ main ]
 
 jobs:
+  gem-artifact:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ruby-3.4.9
+          bundler-cache: true
+
+      - name: Build and verify Gem artifact
+        run: bin/rails test test/packaging/gem_artifact_test.rb
+
   lint:
     runs-on: ubuntu-latest
     steps:
