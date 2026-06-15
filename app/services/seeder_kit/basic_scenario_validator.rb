@@ -2,15 +2,7 @@ require "set"
 
 module SeederKit
   class BasicScenarioValidator
-    class ValidationError < StandardError
-      attr_reader :errors
-
-      def initialize(errors)
-        @errors = errors
-
-        super("Scenario plan is invalid")
-      end
-    end
+    ValidationError = Errors::ScenarioValidationError
 
     def call(plan)
       errors = []
@@ -20,7 +12,7 @@ module SeederKit
       validate_entities(plan, refs, errors)
       validate_dependency_order(plan, errors)
 
-      raise ValidationError, errors if errors.any?
+      raise ValidationError.new("Scenario plan is invalid", metadata: { errors: errors }) if errors.any?
 
       true
     end

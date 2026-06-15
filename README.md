@@ -20,6 +20,7 @@ SeederKit is early-stage. The shipped Rails engine currently provides service-le
 
 - Structured scenario plans using Ruby hashes.
 - Named scenario registration with typed inputs.
+- Structured expected-failure errors and duplicate-name rejection.
 - Shallow scenario composition.
 - Side-effect-free preview and validation.
 - Transaction-wrapped execution with rollback on failure.
@@ -168,6 +169,26 @@ SeederKit.run_scenario("Parameterized user with posts", user_count: 2, posts_per
 ```
 
 Supported input types are `:integer`, `:string`, and `:boolean`. Unknown inputs, missing required inputs, and invalid input types fail clearly before execution.
+
+Expected scenario failures expose a stable `code`, structured `metadata`, and a
+human-readable message. Use `to_h` at integration boundaries to receive exact
+string-keyed `code`, `message`, and `metadata` fields:
+
+```ruby
+error = SeederKit::ScenarioRegistry::UnknownScenarioError.new(
+  "Unknown SeederKit scenario: missing",
+  metadata: { scenario_name: "missing" }
+)
+
+error.code # => "unknown_scenario"
+error.to_h # => { "code" => "unknown_scenario", "message" => "...", "metadata" => { "scenario_name" => "missing" } }
+```
+
+Scenario names are normalized with `to_s`. Registering the same normalized name
+twice raises `SeederKit::ScenarioRegistry::DuplicateScenarioNameError` before
+the replacement block runs, preserving the original definition and order.
+Unexpected application, programming, and persistence exceptions are not
+converted into SeederKit domain errors.
 
 ## Compose Scenarios
 

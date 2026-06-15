@@ -64,9 +64,12 @@ module SeederKit
 
       assert_no_difference -> { User.count } do
         assert_no_difference -> { Post.count } do
-          assert_raises(ActiveRecord::RecordInvalid) do
+          error = assert_raises(ActiveRecord::RecordInvalid) do
             SeederKit.run(plan)
           end
+
+          assert_match(/Validation failed/, error.message)
+          refute_respond_to error, :code
         end
       end
     end

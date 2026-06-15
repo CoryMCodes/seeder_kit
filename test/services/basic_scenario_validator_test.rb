@@ -50,6 +50,11 @@ module SeederKit
         ref: "missing",
         model: "MissingModel"
       }
+      assert_same Errors::ScenarioValidationError, BasicScenarioValidator::ValidationError
+      assert_equal "scenario_validation_failed", error.code
+      assert_equal error.errors, error.metadata.fetch(:errors)
+      assert_equal error.errors.map(&:stringify_keys), error.to_h.dig("metadata", "errors")
+      assert_equal "Scenario plan is invalid", error.message
     end
 
     test "requires unique refs" do
@@ -65,6 +70,16 @@ module SeederKit
       end
 
       assert error.errors.any? { |validation_error| validation_error[:code] == "duplicate_ref" }
+    end
+
+    test "preserves validation error construction and accessor compatibility" do
+      validation_entries = [ { code: "missing_ref", model: "User" } ]
+
+      error = BasicScenarioValidator::ValidationError.new(validation_entries)
+
+      assert_equal "Scenario plan is invalid", error.message
+      assert_equal validation_entries, error.errors
+      assert_equal validation_entries, error.metadata.fetch(:errors)
     end
   end
 end

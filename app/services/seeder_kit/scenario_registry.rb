@@ -1,13 +1,23 @@
 module SeederKit
   class ScenarioRegistry
-    class UnknownScenarioError < KeyError; end
+    UnknownScenarioError = Errors::UnknownScenarioError
+    DuplicateScenarioNameError = Errors::DuplicateScenarioNameError
 
     def initialize
       @definitions_by_name = {}
     end
 
     def register(name, &block)
-      definition = ScenarioDefinition.new(name).evaluate(&block)
+      normalized_name = name.to_s
+
+      if definitions_by_name.key?(normalized_name)
+        raise DuplicateScenarioNameError.new(
+          "SeederKit scenario is already registered: #{normalized_name}",
+          metadata: { scenario_name: normalized_name }
+        )
+      end
+
+      definition = ScenarioDefinition.new(normalized_name).evaluate(&block)
 
       definitions_by_name[definition.name] = definition
 
@@ -19,8 +29,13 @@ module SeederKit
     end
 
     def fetch(name)
-      definitions_by_name.fetch(name.to_s) do
-        raise UnknownScenarioError, "Unknown SeederKit scenario: #{name}"
+      normalized_name = name.to_s
+
+      definitions_by_name.fetch(normalized_name) do
+        raise UnknownScenarioError.new(
+          "Unknown SeederKit scenario: #{name}",
+          metadata: { scenario_name: normalized_name }
+        )
       end
     end
 

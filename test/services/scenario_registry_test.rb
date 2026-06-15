@@ -30,16 +30,85 @@ module SeederKit
       second = SeederKit.scenario("Second") { description "Second scenario" }
 
       assert_equal [ first, second ], SeederKit.scenarios
+      assert_equal [ first, second ], SeederKit.scenarios
+    end
+
+    test "rejects normalized duplicate names before evaluating the replacement block" do
+      original = SeederKit.scenario(:demo) { description "Original" }
+      replacement_evaluated = false
+
+      error = assert_raises(ScenarioRegistry::DuplicateScenarioNameError) do
+        SeederKit.scenario("demo") do
+          replacement_evaluated = true
+          description "Replacement"
+        end
+      end
+
+      assert_same Errors::DuplicateScenarioNameError, ScenarioRegistry::DuplicateScenarioNameError
+      assert_equal "duplicate_scenario_name", error.code
+      assert_equal({ scenario_name: "demo" }, error.metadata)
+      assert_equal "SeederKit scenario is already registered: demo", error.message
+      refute replacement_evaluated
+      assert_same original, SeederKit.scenarios.first
+      assert_equal [ "demo" ], SeederKit.scenarios.map(&:name)
+
+      SeederKit.scenario_registry.clear
+
+      assert_empty SeederKit.scenarios
+    end
+
+    test "registration listing lookup and duplicate rejection do not write or mutate caller plans" do
+      static_plan = {
+        entities: [
+          {
+            ref: "user",
+            model: "User",
+            attributes: { email: "unchanged@example.com" }
+          }
+        ]
+      }
+      original_plan = Marshal.load(Marshal.dump(static_plan))
+
+      assert_no_difference -> { User.count } do
+        first = SeederKit.scenario("First") { plan static_plan }
+        second = SeederKit.scenario("Second") { plan entities: [] }
+
+        assert_equal [ first, second ], SeederKit.scenarios
+        assert_same first, SeederKit.scenario_registry.fetch(:First)
+        assert_raises(ScenarioRegistry::DuplicateScenarioNameError) do
+          SeederKit.scenario("First") { raise "must not run" }
+        end
+      end
+
+      assert_equal original_plan, static_plan
+    end
+
+    test "arbitrary registration block errors escape unchanged" do
+      original = Class.new(StandardError).new("registration failed")
+      cause = RuntimeError.new("root cause")
+
+      error = assert_raises(original.class) do
+        SeederKit.scenario("Broken") { raise original, cause: cause }
+      end
+
+      assert_same original, error
+      assert_same cause, error.cause
+      refute_respond_to error, :code
     end
 
     test "stores ordered child scenario includes" do
+      first_bindings = { user_count: :user_count }
+      second_bindings = { title: "Old news" }
+
       definition = SeederKit.scenario "Demo content" do
-        include_scenario "Users with posts", user_count: :user_count
-        include_scenario "Archived article", title: "Old news"
+        include_scenario "Users with posts", **first_bindings
+        include_scenario "Archived article", **second_bindings
       end
 
       first_include, second_include = definition.scenario_includes
 
+      assert_equal({ user_count: :user_count }, first_bindings)
+      assert_equal({ title: "Old news" }, second_bindings)
       assert definition.composed?
       assert_equal "Users with posts", first_include.name
       assert_equal({ user_count: :user_count }, first_include.input_bindings)
@@ -88,6 +157,28 @@ module SeederKit
       assert_equal :boolean, published.type
       assert_equal :string, name_prefix.type
       assert name_prefix.required?
+    end
+
+    test "unsupported input definitions expose structured invalid input details" do
+      error = assert_raises(ScenarioDefinition::InputError) do
+        SeederKit.scenario "Unsupported input" do
+          input :published_at, type: :datetime
+        end
+      end
+
+      assert_same Errors::InvalidInputError, ScenarioDefinition::InputError
+      assert_kind_of ArgumentError, error
+      assert_equal "invalid_input", error.code
+      assert_equal(
+        {
+          scenario_name: "Unsupported input",
+          input_name: :published_at,
+          expected_category: %i[integer string boolean],
+          actual_category: :datetime
+        },
+        error.metadata
+      )
+      assert_equal "Unsupported input type for published_at: datetime", error.message
     end
 
     test "input defaults are used" do
@@ -183,6 +274,16 @@ module SeederKit
       end
 
       assert_equal "Unknown input for scenario Known inputs: other_count", error.message
+      assert_equal "invalid_input", error.code
+      assert_equal(
+        {
+          scenario_name: "Known inputs",
+          input_name: :other_count,
+          expected_category: "declared_input",
+          actual_category: "unknown_input"
+        },
+        error.metadata
+      )
     end
 
     test "missing required inputs fail clearly" do
@@ -195,6 +296,9 @@ module SeederKit
       end
 
       assert_equal "Missing required input for scenario Required inputs: name_prefix", error.message
+      assert_equal "invalid_input", error.code
+      assert_equal "required_input", error.metadata.fetch(:expected_category)
+      assert_equal "missing_input", error.metadata.fetch(:actual_category)
     end
 
     test "invalid input types fail clearly" do
@@ -207,6 +311,9 @@ module SeederKit
       end
 
       assert_equal "Invalid input type for scenario Typed inputs: user_count must be integer", error.message
+      assert_equal "invalid_input", error.code
+      assert_equal :integer, error.metadata.fetch(:expected_category)
+      assert_equal "String", error.metadata.fetch(:actual_category)
     end
 
     test "runs a registered scenario by name" do
@@ -293,6 +400,17 @@ module SeederKit
       end
 
       assert_equal "Unknown SeederKit scenario: Missing scenario", error.message
+      assert_same Errors::UnknownScenarioError, ScenarioRegistry::UnknownScenarioError
+      assert_equal "unknown_scenario", error.code
+      assert_equal({ scenario_name: "Missing scenario" }, error.metadata)
+      assert_equal(
+        {
+          "code" => "unknown_scenario",
+          "message" => "Unknown SeederKit scenario: Missing scenario",
+          "metadata" => { "scenario_name" => "Missing scenario" }
+        },
+        error.to_h
+      )
     end
 
     test "scenario execution uses the existing validation path" do

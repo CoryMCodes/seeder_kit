@@ -8,6 +8,8 @@ All notable changes to SeederKit are documented in this file.
 
 - Prepared the `0.1.0` Rails Engine artifact with trustworthy metadata, public
   package documentation, and automated contents verification.
+- Added structured expected scenario errors and deterministic duplicate-name
+  rejection while preserving existing nested error constants.
 
 ## [0.1.0] - Unreleased
 
